@@ -4,217 +4,404 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Scan produit</title>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      --bg1:#0b1020;
+      --bg2:#121a33;
+      --card: rgba(255,255,255,.08);
+      --card2: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+
+      --accent1:#7c3aed; /* violet */
+      --accent2:#22c55e; /* vert */
+      --accent3:#f97316; /* orange */
+      --danger:#ef4444;
+
+      --shadow: 0 30px 80px rgba(0,0,0,.55);
+      --radius: 26px;
     }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      overflow-x:hidden;
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(124,58,237,.45), transparent 55%),
+        radial-gradient(800px 500px at 85% 20%, rgba(34,197,94,.32), transparent 55%),
+        radial-gradient(900px 700px at 50% 90%, rgba(249,115,22,.25), transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
     }
-    
-    .card {
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 25px 70px rgba(0,0,0,0.35);
-      max-width: 500px;
-      width: 100%;
-      overflow: hidden;
-      animation: slideUp 0.5s ease-out;
+
+    /* Halo animé */
+    .glow{
+      position: fixed;
+      inset:-40%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(124,58,237,.20), transparent 40%),
+        radial-gradient(circle at 70% 35%, rgba(34,197,94,.14), transparent 42%),
+        radial-gradient(circle at 55% 70%, rgba(249,115,22,.12), transparent 45%);
+      filter: blur(30px);
+      animation: float 9s ease-in-out infinite;
+      pointer-events:none;
+      z-index:0;
     }
-    
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes float{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(0,-1.5%,0) scale(1.02); }
     }
-    
-    .card-header {
-      background: linear-gradient(135deg, #F27711 0%, #F0891D 100%);
-      padding: 40px 30px;
-      text-align: center;
-      color: white;
+
+    .wrap{ width:100%; max-width: 520px; position:relative; z-index:1; }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow:hidden;
+      transform: translateY(8px);
+      opacity:0;
+      animation: enter .55s cubic-bezier(.2,.9,.2,1) forwards;
     }
-    
-    .card-header.error {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    @keyframes enter{
+      to{ transform: translateY(0); opacity:1; }
     }
-    
-    .card-header.inactive {
-      background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
+
+    .topbar{
+      padding: 18px 18px 0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
-    
-    .card-icon {
-      font-size: 70px;
-      margin-bottom: 15px;
-      display: block;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
     }
-    
-    .spinner {
-      border: 5px solid rgba(255,255,255,0.3);
-      border-top: 5px solid white;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .card-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    .card-subtitle {
-      font-size: 15px;
-      opacity: 0.9;
-    }
-    
-    .card-body {
-      padding: 35px 30px;
-    }
-    
-    .status-text {
-      color: #2c3e50;
-      font-size: 16px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    
-    .gtin-display {
-      background: #f8f9fa;
-      padding: 15px 20px;
+    .brand-badge{
+      width:36px; height:36px;
       border-radius: 12px;
-      font-family: 'Courier New', monospace;
-      font-size: 18px;
-      font-weight: 600;
-      text-align: center;
-      color: #667eea;
-      margin: 20px 0;
-      border-left: 4px solid #667eea;
+      background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(34,197,94,.75));
+      box-shadow: 0 12px 30px rgba(124,58,237,.25);
+      display:grid; place-items:center;
+      border: 1px solid rgba(255,255,255,.18);
     }
-    
-    .product-name {
+    .brand-title{
+      font-weight: 750;
+      letter-spacing: .2px;
+      font-size: 14px;
+      color: rgba(255,255,255,.88);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brand-sub{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top:2px;
+    }
+
+    .pill{
+      font-size: 12px;
+      color: rgba(255,255,255,.82);
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+
+    .header{
+      padding: 18px 22px 8px;
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+    }
+
+    .statusIcon{
+      width:52px; height:52px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      display:grid; place-items:center;
+      flex: 0 0 auto;
+      box-shadow: 0 18px 45px rgba(0,0,0,.25);
+      position:relative;
+      overflow:hidden;
+    }
+    .statusIcon::after{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 40%);
+      transform: rotate(15deg);
+      opacity:.6;
+    }
+
+    .titles{ flex:1; min-width:0; padding-top:2px; }
+    .title{
       font-size: 20px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      line-height:1.15;
+    }
+    .subtitle{
+      margin-top:6px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+
+    .progress{
+      height: 8px;
+      margin: 10px 22px 0;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .bar{
+      height:100%;
+      width: 15%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(124,58,237,.95), rgba(34,197,94,.85));
+      box-shadow: 0 10px 30px rgba(124,58,237,.25);
+      transform-origin:left;
+      animation: load 1.2s ease-in-out infinite;
+    }
+    @keyframes load{
+      0%{ transform: scaleX(.25); opacity:.75; }
+      60%{ transform: scaleX(1); opacity:1; }
+      100%{ transform: scaleX(.35); opacity:.85; }
+    }
+
+    .body{
+      padding: 18px 22px 22px;
+    }
+
+    .row{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top: 10px;
+    }
+
+    .productName{
+      font-size: 18px;
+      font-weight: 820;
+      letter-spacing: .2px;
+    }
+
+    .kv{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .kv .k{
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing:.35px;
+      text-transform: uppercase;
+    }
+    .kv .v{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 14px;
+      color: rgba(255,255,255,.92);
       font-weight: 700;
-      color: #667eea;
-      margin: 15px 0;
-      text-align: center;
+      letter-spacing:.4px;
     }
-    
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 16px 30px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-      margin-top: 20px;
-    }
-    
-    .btn:active {
-      transform: scale(0.98);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-    }
-    
-    .error-text {
-      color: #f5576c;
-      font-weight: 600;
-    }
-    
-    .info-box {
-      background: #f8f9fa;
-      padding: 15px 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-      border-left: 4px solid #ffc107;
-    }
-    
-    .info-box.error {
-      border-left-color: #f5576c;
-      background: #fff5f5;
-    }
-    
-    .info-box.success {
-      border-left-color: #4caf50;
-      background: #f1f8f4;
-    }
-    
-    code {
-      background: #e9ecef;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-family: 'Courier New', monospace;
+
+    .notice{
+      border-radius: 18px;
+      padding: 14px 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.88);
+      line-height:1.5;
       font-size: 14px;
     }
-    
-    .countdown {
-      font-size: 14px;
-      color: #7f8c8d;
-      margin-top: 15px;
-      text-align: center;
+    .notice.success{
+      border-color: rgba(34,197,94,.35);
+      background: rgba(34,197,94,.10);
     }
-    
-    @media (max-width: 480px) {
-      .card-header {
-        padding: 35px 25px;
-      }
-      .card-body {
-        padding: 30px 25px;
-      }
-      .card-icon {
-        font-size: 60px;
-      }
-      .card-title {
-        font-size: 20px;
-      }
+    .notice.warn{
+      border-color: rgba(249,115,22,.35);
+      background: rgba(249,115,22,.10);
+    }
+    .notice.error{
+      border-color: rgba(239,68,68,.38);
+      background: rgba(239,68,68,.11);
+    }
+
+    .actions{
+      margin-top: 14px;
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1 1 auto;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      cursor:pointer;
+      text-decoration:none;
+      color: rgba(255,255,255,.94);
+      font-weight: 820;
+      letter-spacing:.2px;
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(34,197,94,.80));
+      box-shadow: 0 18px 45px rgba(124,58,237,.20);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px) scale(.99); filter: brightness(.98); }
+
+    .btn.ghost{
+      background: rgba(255,255,255,.06);
+      box-shadow:none;
+    }
+
+    .countdown{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align:center;
+    }
+
+    /* Variants header accent via data-state */
+    .card[data-state="success"] .statusIcon{
+      background: rgba(34,197,94,.12);
+      border-color: rgba(34,197,94,.30);
+    }
+    .card[data-state="error"] .statusIcon{
+      background: rgba(239,68,68,.14);
+      border-color: rgba(239,68,68,.33);
+    }
+    .card[data-state="warn"] .statusIcon{
+      background: rgba(249,115,22,.14);
+      border-color: rgba(249,115,22,.35);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .glow, .bar, .card{ animation:none !important; }
+      .card{ opacity:1; transform:none; }
+    }
+
+    @media (max-width: 420px){
+      .title{ font-size: 18px; }
+      .statusIcon{ width:48px; height:48px; border-radius: 16px; }
+      .body{ padding: 16px 18px 18px; }
+      .header{ padding: 16px 18px 6px; }
+      .progress{ margin: 10px 18px 0; }
+      .topbar{ padding: 16px 16px 0; }
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="card-header" id="header">
-      <div class="spinner" id="spinner"></div>
-      <span class="card-icon" id="icon">🔍</span>
-      <div class="card-title" id="title">Recherche du produit…</div>
-      <div class="card-subtitle" id="subtitle">Veuillez patienter</div>
-    </div>
-    
-    <div class="card-body">
-      <div id="content">
-        <p class="status-text">Initialisation de la recherche...</p>
+  <div class="glow"></div>
+
+  <div class="wrap">
+    <div class="card" id="card" data-state="loading">
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-badge" aria-hidden="true">
+            <!-- mini "scan" icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M7 4h-2a1 1 0 0 0-1 1v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M17 4h2a1 1 0 0 1 1 1v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 20h-2a1 1 0 0 1-1-1v-2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M17 20h2a1 1 0 0 0 1-1v-2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="min-width:0">
+            <div class="brand-title">Authentification produit</div>
+            <div class="brand-sub" id="brandSub">Scan & vérification</div>
+          </div>
+        </div>
+
+        <div class="pill" id="pill">
+          <span aria-hidden="true">⏳</span>
+          <span id="pillText">Chargement</span>
+        </div>
+      </div>
+
+      <div class="header">
+        <div class="statusIcon" id="statusIcon" aria-hidden="true">
+          <span id="emoji" style="font-size:22px; position:relative; z-index:1;">🔍</span>
+        </div>
+
+        <div class="titles">
+          <div class="title" id="title">Recherche du produit…</div>
+          <div class="subtitle" id="subtitle">Connexion à la base et vérification des informations.</div>
+        </div>
+      </div>
+
+      <div class="progress" id="progress">
+        <div class="bar" id="bar"></div>
+      </div>
+
+      <div class="body">
+        <div id="content" class="row">
+          <div class="notice">
+            Initialisation…
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrdt7iEq5I4nw7s8TBBKxuLhkbyTPN1hYHelrI2XmdeEKuI-2OAZDb1XOUXxMWFM1dUNv_A9Ww5jMj/pub?gid=0&single=true&output=csv";
+
+  const $ = (id) => document.getElementById(id);
+
+  function setState(state){
+    // state: loading | success | warn | error
+    $("card").dataset.state = state;
+    const map = {
+      loading: { pill:"Chargement", icon:"⏳", brand:"Scan & vérification" },
+      success: { pill:"OK", icon:"✅", brand:"Authentifié" },
+      warn:    { pill:"Attention", icon:"⚠️", brand:"Vérification" },
+      error:   { pill:"Erreur", icon:"❌", brand:"Incident" }
+    };
+    $("pillText").textContent = map[state].pill;
+    $("pill").querySelector("span").textContent = map[state].icon;
+    $("brandSub").textContent = map[state].brand;
+
+    // progress bar visible only in loading
+    $("progress").style.display = (state === "loading") ? "block" : "none";
+  }
 
   function getParam(name) {
     const u = new URL(window.location.href);
@@ -244,69 +431,96 @@
     });
   }
 
-  function showError(message) {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('header').classList.add('error');
-    document.getElementById('icon').textContent = '❌';
-    document.getElementById('title').textContent = 'Erreur';
-    document.getElementById('subtitle').textContent = 'Impossible de continuer';
-    document.getElementById('content').innerHTML = `
-      <div class="info-box error">
-        <p class="error-text">${message}</p>
+  function kv(label, value){
+    return `
+      <div class="kv">
+        <div class="k">${label}</div>
+        <div class="v">${value}</div>
       </div>
     `;
   }
 
+  function showError(message) {
+    setState("error");
+    $("emoji").textContent = "❌";
+    $("title").textContent = "Une erreur est survenue";
+    $("subtitle").textContent = "Impossible de poursuivre la vérification pour le moment.";
+    $("content").innerHTML = `
+      <div class="notice error">${message}</div>
+      <div class="actions">
+        <button class="btn ghost" id="retryBtn" type="button">↻ Réessayer</button>
+      </div>
+    `;
+    $("retryBtn").onclick = () => window.location.reload();
+  }
+
   function showInactive(nom, gtin) {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('header').classList.add('inactive');
-    document.getElementById('icon').textContent = '⚠️';
-    document.getElementById('title').textContent = 'Produit Désactivé';
-    document.getElementById('subtitle').textContent = 'Non disponible actuellement';
-    document.getElementById('content').innerHTML = `
-      <div class="product-name">${nom || 'Produit sans nom'}</div>
-      <div class="gtin-display">EAN: ${gtin}</div>
-      <div class="info-box">
-        <p style="color: #856404; line-height: 1.6;">
-          Ce produit n'est plus disponible ou a été temporairement désactivé.
-          Pour plus d'informations, veuillez contacter le service client.
-        </p>
+    setState("warn");
+    $("emoji").textContent = "⚠️";
+    $("title").textContent = "Produit désactivé";
+    $("subtitle").textContent = "Ce produit n’est pas disponible actuellement.";
+    $("content").innerHTML = `
+      <div class="productName">${nom || "Produit sans nom"}</div>
+      ${kv("EAN", gtin)}
+      <div class="notice warn">
+        Ce produit a été temporairement désactivé ou n’est plus commercialisé.
+        Si besoin, contactez le service client.
       </div>
     `;
   }
 
   function showSuccess(nom, gtin, url) {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('icon').textContent = '✅';
-    document.getElementById('title').textContent = 'Produit Trouvé';
-    document.getElementById('subtitle').textContent = 'Redirection en cours...';
-    
+    setState("success");
+    $("emoji").textContent = "✅";
+    $("title").textContent = "Produit trouvé";
+    $("subtitle").textContent = "Authentification réussie. Redirection automatique.";
+
     let countdown = 3;
-    const countdownEl = document.createElement('div');
-    countdownEl.className = 'countdown';
-    countdownEl.textContent = `Redirection dans ${countdown} secondes...`;
-    
-    document.getElementById('content').innerHTML = `
-      <div class="product-name">${nom}</div>
-      <div class="gtin-display">EAN: ${gtin}</div>
-      <div class="info-box success">
-        <p style="color: #2e7d32; font-weight: 600;">
-          ✓ Authentification réussie
-        </p>
+
+    $("content").innerHTML = `
+      <div class="productName">${nom}</div>
+      ${kv("EAN", gtin)}
+      <div class="notice success"><strong>✓</strong> Authentification réussie</div>
+
+      <div class="actions">
+        <button class="btn" id="openBtn" type="button">
+          <span aria-hidden="true">📦</span>
+          Voir la fiche produit
+        </button>
+        <button class="btn ghost" id="copyBtn" type="button">
+          <span aria-hidden="true">📋</span>
+          Copier l’EAN
+        </button>
       </div>
-      <button class="btn" id="openBtn">📦 Voir la Fiche Produit</button>
+
+      <div class="countdown" id="countdown">Redirection dans ${countdown} secondes…</div>
     `;
-    
-    document.getElementById('content').appendChild(countdownEl);
-    
-    const openBtn = document.getElementById('openBtn');
-    openBtn.onclick = () => window.location.href = url;
-    
-    // Countdown
+
+    $("openBtn").onclick = () => window.location.href = url;
+
+    $("copyBtn").onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(gtin);
+        $("copyBtn").textContent = "✓ Copié";
+        setTimeout(()=> $("copyBtn").innerHTML = '<span aria-hidden="true">📋</span> Copier l’EAN', 900);
+      }catch(e){
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = gtin;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+    };
+
     const interval = setInterval(() => {
       countdown--;
+      const el = $("countdown");
+      if (!el) return clearInterval(interval);
+
       if (countdown > 0) {
-        countdownEl.textContent = `Redirection dans ${countdown} secondes...`;
+        el.textContent = `Redirection dans ${countdown} seconde${countdown>1?"s":""}…`;
       } else {
         clearInterval(interval);
         window.location.href = url;
@@ -315,43 +529,45 @@
   }
 
   function showNotFound(gtin) {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('header').classList.add('error');
-    document.getElementById('icon').textContent = '🔍';
-    document.getElementById('title').textContent = 'Produit Introuvable';
-    document.getElementById('subtitle').textContent = 'Aucune correspondance';
-    document.getElementById('content').innerHTML = `
-      <div class="gtin-display">EAN: ${gtin}</div>
-      <div class="info-box error">
-        <p class="error-text" style="line-height: 1.6;">
-          Aucun produit trouvé pour ce code-barre.
-          <br><br>
-          Vérifiez que le code est correct ou contactez le service client.
-        </p>
+    setState("error");
+    $("emoji").textContent = "🔎";
+    $("title").textContent = "Produit introuvable";
+    $("subtitle").textContent = "Aucune correspondance dans la base.";
+    $("content").innerHTML = `
+      ${kv("EAN", gtin)}
+      <div class="notice error">
+        Aucun produit ne correspond à ce code-barres.
+        Vérifiez le scan ou contactez le service client.
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="retryBtn" type="button">↻ Re-scanner</button>
       </div>
     `;
+    $("retryBtn").onclick = () => window.location.reload();
   }
 
   async function run() {
+    setState("loading");
+
     const gtin = cleanGtin(getParam("gtin") || getParam("GTIN"));
-    
+
     if (!gtin) {
-      showError("Aucun code produit (GTIN) fourni dans l'URL.<br><br>Exemple : <code>?gtin=1234567890123</code>");
+      showError(`Aucun code produit (GTIN) fourni dans l'URL.<br><br>Exemple : <code style="background:rgba(255,255,255,.08);padding:2px 6px;border-radius:8px;">?gtin=1234567890123</code>`);
       return;
     }
 
-    document.getElementById('content').innerHTML = `
-      <div class="gtin-display">EAN: ${gtin}</div>
-      <p class="status-text">Recherche dans la base de données...</p>
+    $("content").innerHTML = `
+      ${kv("EAN", gtin)}
+      <div class="notice">Recherche dans la base de données…</div>
     `;
 
     let csv = "";
     try {
       const resp = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" });
-      if (!resp.ok) throw new Error("Erreur HTTP");
+      if (!resp.ok) throw new Error("HTTP");
       csv = await resp.text();
     } catch (e) {
-      showError("Impossible de charger la base de données.<br><br>Vérifiez que le fichier CSV est bien publié.");
+      showError("Impossible de charger la base de données.<br><br>Vérifiez que le fichier CSV est bien publié et accessible.");
       return;
     }
 
@@ -366,14 +582,13 @@
       const actif = (r[7] || "").toString().trim().toLowerCase();
 
       if (gtinSheet === gtin) {
-        // Produit trouvé
         if (actif === "non") {
           showInactive(nom, gtin);
           return;
         }
-        
+
         if (!url) {
-          showError(`Produit trouvé : <strong>${nom}</strong><br><br>Mais aucune URL de destination n'est configurée.`);
+          showError(`Produit trouvé : <strong>${nom || "Sans nom"}</strong><br><br>Mais aucune URL de destination n'est configurée.`);
           return;
         }
 
@@ -390,3 +605,5 @@
 </script>
 </body>
 </html>
+
+
