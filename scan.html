@@ -15,9 +15,9 @@
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.70);
 
-      --accent1:#7c3aed; /* violet */
-      --accent2:#22c55e; /* vert */
-      --accent3:#f97316; /* orange */
+      --accent1:#7c3aed;
+      --accent2:#22c55e;
+      --accent3:#f97316;
 
       --shadow: 0 30px 80px rgba(0,0,0,.55);
       --radius: 26px;
@@ -61,6 +61,21 @@
 
     .wrap{ width:100%; max-width: 520px; position:relative; z-index:1; }
 
+    /* Logo au-dessus de la carte */
+    .topLogo{
+      width: 50%;
+      max-width: 240px;
+      margin: 0 auto 14px;
+      display:none; /* affiché via JS si K1 OK */
+      filter: drop-shadow(0 16px 30px rgba(0,0,0,.35));
+    }
+    .topLogo img{
+      width:100%;
+      height:auto;
+      display:block;
+      object-fit: contain;
+    }
+
     .card{
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--card), var(--card2));
@@ -90,6 +105,7 @@
       min-width:0;
     }
 
+    /* Badge simple (sans logo dedans) */
     .brand-badge{
       width:36px; height:36px;
       border-radius: 12px;
@@ -98,13 +114,7 @@
       display:grid; place-items:center;
       border: 1px solid rgba(255,255,255,.18);
       overflow:hidden;
-    }
-
-    .brand-badge img{
-      width:24px; height:24px;
-      object-fit:contain;
-      display:none;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.25));
+      flex: 0 0 auto;
     }
 
     .brand-title{
@@ -135,13 +145,13 @@
       user-select:none;
     }
 
+    /* On garde une zone header “neutre” pour le chargement uniquement */
     .header{
       padding: 18px 22px 8px;
       display:flex;
       align-items:flex-start;
       gap:14px;
     }
-
     .statusIcon{
       width:52px; height:52px;
       border-radius: 18px;
@@ -208,7 +218,7 @@
       margin-top: 10px;
     }
 
-    /* ✅ Ligne produit: image carrée à gauche (1/3) + nom à droite (2/3) */
+    /* Ligne produit: image carrée à gauche (1/3) + nom à droite (2/3) */
     .productRow{
       display:flex;
       gap:12px;
@@ -242,10 +252,10 @@
       min-width: 0;
     }
     .productName{
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 860;
       letter-spacing:.2px;
-      line-height:1.2;
+      line-height:1.18;
       word-break: break-word;
     }
 
@@ -305,7 +315,6 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:10px;
       padding: 14px 16px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.16);
@@ -321,11 +330,7 @@
       -webkit-tap-highlight-color: transparent;
     }
     .btn:active{ transform: translateY(1px) scale(.99); filter: brightness(.98); }
-
-    .btn.ghost{
-      background: rgba(255,255,255,.06);
-      box-shadow:none;
-    }
+    .btn.ghost{ background: rgba(255,255,255,.06); box-shadow:none; }
 
     .countdown{
       margin-top: 8px;
@@ -334,10 +339,6 @@
       text-align:center;
     }
 
-    .card[data-state="success"] .statusIcon{
-      background: rgba(34,197,94,.12);
-      border-color: rgba(34,197,94,.30);
-    }
     .card[data-state="error"] .statusIcon{
       background: rgba(239,68,68,.14);
       border-color: rgba(239,68,68,.33);
@@ -360,7 +361,8 @@
       .progress{ margin: 10px 18px 0; }
       .topbar{ padding: 16px 16px 0; }
       .thumbWrap{ max-width: 120px; min-width: 86px; }
-      .productName{ font-size: 17px; }
+      .productName{ font-size: 18px; }
+      .topLogo{ width: 50%; max-width: 220px; }
     }
   </style>
 </head>
@@ -369,12 +371,17 @@
   <div class="glow"></div>
 
   <div class="wrap">
+    <!-- ✅ Logo centré au-dessus de l'encart -->
+    <div class="topLogo" id="topLogo">
+      <img id="topLogoImg" alt="Logo entreprise" referrerpolicy="no-referrer">
+    </div>
+
     <div class="card" id="card" data-state="loading">
       <div class="topbar">
         <div class="brand">
           <div class="brand-badge" aria-hidden="true">
-            <img id="companyLogo" alt="Logo entreprise" referrerpolicy="no-referrer" />
-            <svg id="fallbackIcon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <!-- Icône simple (sans logo entreprise ici) -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M7 4h-2a1 1 0 0 0-1 1v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
               <path d="M17 4h2a1 1 0 0 1 1 1v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
               <path d="M7 20h-2a1 1 0 0 1-1-1v-2" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -395,7 +402,8 @@
         </div>
       </div>
 
-      <div class="header">
+      <!-- ✅ Cette zone sert surtout au chargement / erreurs -->
+      <div class="header" id="headerBlock">
         <div class="statusIcon" id="statusIcon" aria-hidden="true">
           <span id="emoji" style="font-size:22px; position:relative; z-index:1;">🔍</span>
         </div>
@@ -420,7 +428,6 @@
 
 <script>
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrdt7iEq5I4nw7s8TBBKxuLhkbyTPN1hYHelrI2XmdeEKuI-2OAZDb1XOUXxMWFM1dUNv_A9Ww5jMj/pub?gid=0&single=true&output=csv";
-
   const $ = (id) => document.getElementById(id);
 
   function setState(state){
@@ -451,7 +458,7 @@
     const u = url.trim();
     if (!u) return "";
     if (u.startsWith("https://")) return u;
-    if (u.startsWith("http://")) return "https://" + u.slice("http://".length); // ✅ évite mixed content iOS
+    if (u.startsWith("http://")) return "https://" + u.slice("http://".length); // évite mixed content iOS
     if (u.startsWith("//")) return "https:" + u;
     if (u.startsWith("data:")) return u;
     return "https://" + u;
@@ -507,7 +514,7 @@
     $("content").innerHTML = `
       <div class="notice warn">
         Ce produit a été temporairement désactivé ou n’est plus commercialisé.
-        Si besoin, contactez le service client.
+        Si besoin, contactez le service client à conso@jeannette1850.com.
       </div>
       ${kv("EAN", gtin)}
     `;
@@ -523,9 +530,7 @@
                onerror="this.closest('.thumbWrap').style.display='none'">
         </div>
       </div>
-    ` : `
-      <div class="thumbWrap" style="display:none"></div>
-    `;
+    ` : `<div class="thumbWrap" style="display:none"></div>`;
 
     return `
       <div class="productRow">
@@ -537,11 +542,15 @@
     `;
   }
 
+  // ✅ Succès: on SUPPRIME le bloc "Produit authentifié / redirection ..." + la coche (pas affiché)
   function showSuccess(nom, gtin, url, imageUrl) {
     setState("success");
-    $("emoji").textContent = "✅";
-    $("title").textContent = "Produit authentifié";
-    $("subtitle").textContent = "Redirection automatique vers la fiche produit.";
+
+    // On “neutralise” l'en-tête (plus de message succès)
+    $("emoji").textContent = "🔍";
+    $("title").textContent = "";
+    $("subtitle").textContent = "";
+    $("headerBlock").style.display = "none"; // ✅ supprime tout le bloc
 
     let countdown = 3;
 
@@ -574,6 +583,7 @@
 
   function showNotFound(gtin) {
     setState("error");
+    $("headerBlock").style.display = "flex";
     $("emoji").textContent = "🔎";
     $("title").textContent = "Produit introuvable";
     $("subtitle").textContent = "Aucune correspondance dans la base.";
@@ -581,7 +591,7 @@
       ${kv("EAN", gtin)}
       <div class="notice error">
         Aucun produit ne correspond à ce code-barres.
-        Vérifiez le scan ou contactez le service client.
+        Vérifiez le scan ou contactez le service client à conso@jeannette1850.com.
       </div>
       <div class="actions">
         <button class="btn ghost" id="retryBtn" type="button">↻ Re-scanner</button>
@@ -591,36 +601,26 @@
   }
 
   function applyCompanyLogo(rows){
-    // K1 => ligne 1 / colonne K (index 10) dans le CSV complet.
-    // Si le CSV publié ne contient pas jusqu'à K, ce sera vide.
+    // K1 => ligne 1 / colonne K (index 10)
     const raw = (rows?.[0]?.[10] || "").trim();
-    const logoCandidate = toHttps(raw);
+    const logoUrl = toHttps(raw);
+    const topLogo = $("topLogo");
+    const img = $("topLogoImg");
 
-    const img = $("companyLogo");
-    const fallback = $("fallbackIcon");
-
-    if (!logoCandidate) {
-      // rien à afficher
-      img.style.display = "none";
-      fallback.style.display = "block";
+    if (!logoUrl) {
+      topLogo.style.display = "none";
       return;
     }
 
-    // Afficher le logo seulement quand il est chargé (évite “vide”)
-    img.onload = () => {
-      img.style.display = "block";
-      fallback.style.display = "none";
-    };
-    img.onerror = () => {
-      img.style.display = "none";
-      fallback.style.display = "block";
-    };
+    img.onload = () => { topLogo.style.display = "block"; };
+    img.onerror = () => { topLogo.style.display = "none"; };
 
-    img.src = logoCandidate;
+    img.src = logoUrl;
   }
 
   async function run() {
     setState("loading");
+    $("headerBlock").style.display = "flex";
 
     const gtin = cleanGtin(getParam("gtin") || getParam("GTIN"));
     if (!gtin) {
@@ -645,7 +645,7 @@
 
     const rows = parseCSV(csv);
 
-    // ✅ logo en K1
+    // ✅ Logo entreprise K1 (affiché au-dessus de la carte)
     applyCompanyLogo(rows);
 
     // Colonnes:
@@ -655,14 +655,11 @@
       const gtinSheet = cleanGtin(r[0] || "");
       const nom = r[1] || "";
       const urlRaw = (r[2] || "").trim();
-      const imageUrlRaw = (r[4] || "").trim(); // ✅ Colonne E
+      const imageUrlRaw = (r[4] || "").trim(); // Colonne E
       const actif = (r[7] || "").toString().trim().toLowerCase();
 
       if (gtinSheet === gtin) {
-        if (actif === "non") {
-          showInactive(nom, gtin);
-          return;
-        }
+        if (actif === "non") { showInactive(nom, gtin); return; }
 
         if (!urlRaw) {
           showError(`Produit trouvé : <strong>${nom || "Sans nom"}</strong><br><br>Mais aucune URL de destination n'est configurée.`);
