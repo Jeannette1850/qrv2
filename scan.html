@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Scan produit</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+      max-width: 500px;
+      width: 100%;
+      overflow: hidden;
+      animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 30px;
+      text-align: center;
+      color: white;
+    }
+    
+    .card-header.error {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .card-header.inactive {
+      background: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
+    }
+    
+    .card-icon {
+      font-size: 70px;
+      margin-bottom: 15px;
+      display: block;
+    }
+    
+    .spinner {
+      border: 5px solid rgba(255,255,255,0.3);
+      border-top: 5px solid white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .card-subtitle {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+    
+    .card-body {
+      padding: 35px 30px;
+    }
+    
+    .status-text {
+      color: #2c3e50;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .gtin-display {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      color: #667eea;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+    }
+    
+    .product-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #667eea;
+      margin: 15px 0;
+      text-align: center;
+    }
+    
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+      margin-top: 20px;
+    }
+    
+    .btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .error-text {
+      color: #f5576c;
+      font-weight: 600;
+    }
+    
+    .info-box {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .info-box.error {
+      border-left-color: #f5576c;
+      background: #fff5f5;
+    }
+    
+    .info-box.success {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    
+    code {
+      background: #e9ecef;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    .countdown {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    @media (max-width: 480px) {
+      .card-header {
+        padding: 35px 25px;
+      }
+      .card-body {
+        padding: 30px 25px;
+      }
+      .card-icon {
+        font-size: 60px;
+      }
+      .card-title {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header" id="header">
+      <div class="spinner" id="spinner"></div>
+      <span class="card-icon" id="icon">🔍</span>
+      <div class="card-title" id="title">Recherche du produit…</div>
+      <div class="card-subtitle" id="subtitle">Veuillez patienter</div>
+    </div>
+    
+    <div class="card-body">
+      <div id="content">
+        <p class="status-text">Initialisation de la recherche...</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4NFsZz7QvNEzZwdG-dZOhDnqzn7J57xzI40Npca0c0q6WA_A-8X_6dR2yxBnIWggynMIrfVLrTszq/pub?output=csv";
+
+  function getParam(name) {
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
+  }
+
+  function cleanGtin(x) {
+    return (x || "").toString().trim().replace(/[^0-9]/g, "");
+  }
+
+  function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+    return lines.map(line => {
+      const out = [];
+      let cur = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          out.push(cur); cur = "";
+        } else cur += ch;
+      }
+      out.push(cur);
+      return out.map(s => s.trim());
+    });
+  }
+
+  function showError(message) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('header').classList.add('error');
+    document.getElementById('icon').textContent = '❌';
+    document.getElementById('title').textContent = 'Erreur';
+    document.getElementById('subtitle').textContent = 'Impossible de continuer';
+    document.getElementById('content').innerHTML = `
+      <div class="info-box error">
+        <p class="error-text">${message}</p>
+      </div>
+    `;
+  }
+
+  function showInactive(nom, gtin) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('header').classList.add('inactive');
+    document.getElementById('icon').textContent = '⚠️';
+    document.getElementById('title').textContent = 'Produit Désactivé';
+    document.getElementById('subtitle').textContent = 'Non disponible actuellement';
+    document.getElementById('content').innerHTML = `
+      <div class="product-name">${nom || 'Produit sans nom'}</div>
+      <div class="gtin-display">EAN: ${gtin}</div>
+      <div class="info-box">
+        <p style="color: #856404; line-height: 1.6;">
+          Ce produit n'est plus disponible ou a été temporairement désactivé.
+          Pour plus d'informations, veuillez contacter le service client.
+        </p>
+      </div>
+    `;
+  }
+
+  function showSuccess(nom, gtin, url) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('icon').textContent = '✅';
+    document.getElementById('title').textContent = 'Produit Trouvé';
+    document.getElementById('subtitle').textContent = 'Redirection en cours...';
+    
+    let countdown = 3;
+    const countdownEl = document.createElement('div');
+    countdownEl.className = 'countdown';
+    countdownEl.textContent = `Redirection dans ${countdown} secondes...`;
+    
+    document.getElementById('content').innerHTML = `
+      <div class="product-name">${nom}</div>
+      <div class="gtin-display">EAN: ${gtin}</div>
+      <div class="info-box success">
+        <p style="color: #2e7d32; font-weight: 600;">
+          ✓ Authentification réussie
+        </p>
+      </div>
+      <button class="btn" id="openBtn">📦 Voir la Fiche Produit</button>
+    `;
+    
+    document.getElementById('content').appendChild(countdownEl);
+    
+    const openBtn = document.getElementById('openBtn');
+    openBtn.onclick = () => window.location.href = url;
+    
+    // Countdown
+    const interval = setInterval(() => {
+      countdown--;
+      if (countdown > 0) {
+        countdownEl.textContent = `Redirection dans ${countdown} secondes...`;
+      } else {
+        clearInterval(interval);
+        window.location.href = url;
+      }
+    }, 1000);
+  }
+
+  function showNotFound(gtin) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('header').classList.add('error');
+    document.getElementById('icon').textContent = '🔍';
+    document.getElementById('title').textContent = 'Produit Introuvable';
+    document.getElementById('subtitle').textContent = 'Aucune correspondance';
+    document.getElementById('content').innerHTML = `
+      <div class="gtin-display">EAN: ${gtin}</div>
+      <div class="info-box error">
+        <p class="error-text" style="line-height: 1.6;">
+          Aucun produit trouvé pour ce code-barre.
+          <br><br>
+          Vérifiez que le code est correct ou contactez le service client.
+        </p>
+      </div>
+    `;
+  }
+
+  async function run() {
+    const gtin = cleanGtin(getParam("gtin") || getParam("GTIN"));
+    
+    if (!gtin) {
+      showError("Aucun code produit (GTIN) fourni dans l'URL.<br><br>Exemple : <code>?gtin=1234567890123</code>");
+      return;
+    }
+
+    document.getElementById('content').innerHTML = `
+      <div class="gtin-display">EAN: ${gtin}</div>
+      <p class="status-text">Recherche dans la base de données...</p>
+    `;
+
+    let csv = "";
+    try {
+      const resp = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" });
+      if (!resp.ok) throw new Error("Erreur HTTP");
+      csv = await resp.text();
+    } catch (e) {
+      showError("Impossible de charger la base de données.<br><br>Vérifiez que le fichier CSV est bien publié.");
+      return;
+    }
+
+    const rows = parseCSV(csv);
+
+    // Col A=GTIN, Col B=Nom, Col C=URL, Col H=Actif
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const gtinSheet = cleanGtin(r[0] || "");
+      const nom = r[1] || "";
+      const url = (r[2] || "").trim();
+      const actif = (r[7] || "").toString().trim().toLowerCase();
+
+      if (gtinSheet === gtin) {
+        // Produit trouvé
+        if (actif === "non") {
+          showInactive(nom, gtin);
+          return;
+        }
+        
+        if (!url) {
+          showError(`Produit trouvé : <strong>${nom}</strong><br><br>Mais aucune URL de destination n'est configurée.`);
+          return;
+        }
+
+        const finalUrl = (url.startsWith("http://") || url.startsWith("https://")) ? url : ("https://" + url);
+        showSuccess(nom, gtin, finalUrl);
+        return;
+      }
+    }
+
+    showNotFound(gtin);
+  }
+
+  run();
+</script>
+</body>
+</html>
